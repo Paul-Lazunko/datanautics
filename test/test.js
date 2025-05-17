@@ -5,7 +5,7 @@ const { readFileSync, unlinkSync } = require('fs');
 const { Datanautics } = require('../dist');
 const { setTimeout } = require('timers');
 
-const dumpPath = resolve(__dirname, './data');
+const dumpPath = resolve(__dirname, './data.txt');
 const data = { user: { firstname: 'John', lastname: 'Doe' }, score: [27] };
 
 const db = new Datanautics({ dumpPath, dumpInterval: 0 });
