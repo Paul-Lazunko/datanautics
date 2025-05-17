@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.0] - 2025-05-17 (**Breaking changes!**)
+
+### Fixed
+- Reverted changes since 2.0.0 failed
+
+---
+
+## [2.0.0] - 2025-05-17 (**Breaking changes!**)
+
+### Added
+- Instead of background storing entire object store each key-value eventually
+- Replaced dumpInterval from options
+
+---
 ## [1.1.2] - 2025-05-17
 
 ### Fixed
