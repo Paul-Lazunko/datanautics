@@ -26,8 +26,8 @@ export class Datanautics {
         this.options.logger.error(e);
       }
     }
-    this.eventEmitter.on(DUMP_EVENT, () => {
-      this.createDump();
+    this.eventEmitter.on(DUMP_EVENT, async () => {
+      await this.createDump();
       setTimeout(() => {
         this.eventEmitter.emit(DUMP_EVENT);
       }, this.options.dumpInterval);
@@ -35,15 +35,23 @@ export class Datanautics {
     this.eventEmitter.emit(DUMP_EVENT);
   }
 
-  protected createDump() {
+  protected async createDump() {
     try {
       const flat = PropertyAccessor.flat(this.data);
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
-          setTimeout(() => {
-            exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, () => {});
-          }, 0);
+          try {
+            await new Promise((resolve, reject) => {
+              setTimeout(() => {
+                exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, (error) => {
+                  error ? reject(error) : resolve(true)
+                });
+              }, 0);
+            })
+          } catch(e) {
+            console.error(e)
+          }
         }
       }
     } catch (e) {
