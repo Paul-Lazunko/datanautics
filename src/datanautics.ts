@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs';
+import { exec } from 'child_process'
 import { EventEmitter } from 'events';
 import { PropertyAccessor } from 'property-accessor';
 
@@ -40,7 +41,7 @@ export class Datanautics {
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
-          writeFileSync(`${this.options.dumpPath}/${key}`, PropertyAccessor.get(key, this.data).toString(), 'utf8');
+          exec(`echo ${PropertyAccessor.get(key, this.data).toString()} > ${this.options.dumpPath}/${key}`)
         }
       }
     } catch (e) {
