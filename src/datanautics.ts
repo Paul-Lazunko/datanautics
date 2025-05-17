@@ -57,9 +57,11 @@ export class Datanautics {
     const files: string[] = readdirSync(this.options.dumpPath);
     for (const file of files) {
       if (file !== '.gitkeep') {
-        let value: string | number = readFileSync(`${this.options.dumpPath}/${file}`).toString();
+        let value: string | number | boolean = readFileSync(`${this.options.dumpPath}/${file}`).toString().replace(/\n/g, '');
         if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
           value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
+        } else if (/^false|true$/.test(value)) {
+          value = /^true$/.test(value);
         }
         PropertyAccessor.set(file, value, this.data);
       }
