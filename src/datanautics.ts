@@ -1,12 +1,9 @@
 import { EventEmitter } from 'events';
-import { existsSync, createReadStream, truncate } from 'fs';
-import { exec } from 'child_process';
-import * as readline from 'readline';
+import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
 import { DatanauticsOptions } from '@options';
-import * as console from 'console';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
@@ -18,53 +15,28 @@ export class Datanautics {
     this.data = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
-      this.useDump().catch(console.error).finally(() => {
-        this.eventEmitter.on(DUMP_EVENT, async () => {
-          await this.flushDump();
-          await this.createDump();
-          setTimeout(() => {
-            this.eventEmitter.emit(DUMP_EVENT);
-          }, this.options.dumpInterval);
-        });
-        this.eventEmitter.emit(DUMP_EVENT);
-      })
-    } else {
-      this.eventEmitter.on(DUMP_EVENT, async () => {
-        await this.flushDump();
-        await this.createDump();
-        setTimeout(() => {
-          this.eventEmitter.emit(DUMP_EVENT);
-        }, this.options.dumpInterval);
-      });
-      this.eventEmitter.emit(DUMP_EVENT);
+      this.useDump();
     }
+    this.eventEmitter.on(DUMP_EVENT, async () => {
+      this.createDump();
+      setTimeout(() => {
+        this.eventEmitter.emit(DUMP_EVENT);
+      }, this.options.dumpInterval);
+    });
+    this.eventEmitter.emit(DUMP_EVENT);
   }
 
-  protected flushDump(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      truncate(this.options.dumpPath, (error: Error) => {
-        error ? reject(error) : resolve();
-      })
-    })
-  }
-
-  protected async createDump() {
+  protected createDump() {
     try {
-      const flat = PropertyAccessor.flat(this.data);
+      const flat: Record<string, string> = PropertyAccessor.flat(this.data);
+      const data: any[] = [];
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
-          try {
-            await new Promise((resolve, reject) => {
-              exec(`echo "${key} ${value.toString()}" >> ${this.options.dumpPath}`, (error) => {
-                error ? reject(error) : resolve(true)
-              });
-            })
-          } catch(e) {
-            console.error(e)
-          }
+          data.push(`${key} ${value.toString()}`);
         }
       }
+      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8')
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
@@ -72,17 +44,14 @@ export class Datanautics {
     }
   }
 
-  protected async useDump() {
-    const readStream = createReadStream(this.options.dumpPath);
-    const lines = readline.createInterface({
-      input: readStream,
-      crlfDelay: Infinity, // handles both \n and \r\n
-    });
-    for await (const line of lines) {
-      const data = line.split(' ');
-      const key: string = data[0];
-      let value:  string | number | boolean = data[1];
-      if (key && value) {
+  protected useDump() {
+    const data = readFileSync(this.options.dumpPath).toString('utf8');
+    const lines: string[] = data.split('\n');
+    for (const line of lines) {
+      const [ k, v] = line.split(' ');
+      const key = k.trim();
+      if (v !== undefined) {
+        let value: string | number | boolean = v.trim();
         if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
           value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
         } else if (/^false|true$/.test(value)) {
