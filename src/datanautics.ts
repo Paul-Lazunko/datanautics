@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs';
-import { exec } from 'child_process'
+import { exec } from 'child_process';
 import { EventEmitter } from 'events';
 import { PropertyAccessor } from 'property-accessor';
 
@@ -42,8 +42,8 @@ export class Datanautics {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
           setTimeout(() => {
-            exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, () => {})
-          }, 0)
+            exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, () => {});
+          }, 0);
         }
       }
     } catch (e) {
@@ -57,7 +57,9 @@ export class Datanautics {
     const files: string[] = readdirSync(this.options.dumpPath);
     for (const file of files) {
       if (file !== '.gitkeep') {
-        let value: string | number | boolean = readFileSync(`${this.options.dumpPath}/${file}`).toString().replace(/\n/g, '');
+        let value: string | number | boolean = readFileSync(`${this.options.dumpPath}/${file}`)
+          .toString()
+          .replace(/\n/g, '');
         if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
           value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
         } else if (/^false|true$/.test(value)) {

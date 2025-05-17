@@ -23,5 +23,5 @@ setTimeout(() => {
   // assert.equal(storedData, JSON.stringify(data, null, 2));
   // unlinkSync(dumpPath);
   console.log('tests passed');
-  process.exit(0)
+  process.exit(0);
 }, 1000);

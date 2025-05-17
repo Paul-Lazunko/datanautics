@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.1.0] - 2025-05-17 (**Breaking changes!**)
 
 ### Fixed
+
 - Reverted changes since 2.0.0 failed
 
 ---
@@ -15,13 +16,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.0.0] - 2025-05-17 (**Breaking changes!**)
 
 ### Added
+
 - Instead of background storing entire object store each key-value eventually
 - Replaced dumpInterval from options
 
 ---
+
 ## [1.1.2] - 2025-05-17
 
 ### Fixed
+
 - Non-blocking storing
 
 ---
@@ -29,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.1.1] - 2025-05-17
 
 ### Fixed
+
 - Replaced fs usage with child_process
 
 ---
@@ -36,6 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.1.0] - 2025-05-17
 
 ### Fixed
+
 - Fixed storing to avoid RangeError when JSON.parse/JSON.stringify
 
 ---

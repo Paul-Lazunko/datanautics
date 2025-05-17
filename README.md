@@ -22,7 +22,6 @@ It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nes
 npm install datanautics
 ```
 
-
 ---
 
 ## 🛠 Usage
@@ -34,7 +33,7 @@ const store = new Datanautics({
   dumpPath: './data.json',
   dumpInterval: 1000, // every 1 second
   verbose: true,
-  logger: console
+  logger: console,
 });
 
 store.set('users[0].name', 'Alice');
@@ -47,12 +46,12 @@ console.log(store.get('users[0].name')); // Output: Alice
 
 You can pass the following options to the constructor:
 
-| Option         | Type                | Description                                          | Default                                   |
-|----------------|---------------------|------------------------------------------------------|-------------------------------------------|
-| `dumpPath`     | `string`, optional  | Path to the JSON file for persistent data storage    | `node_modules/datanautics/data/data.json` |
-| `dumpInterval` | `number`, optional  | Interval in milliseconds between auto-dumps          | `1000` (1 second)                         |
-| `verbose`      | `boolean`, optional | Log errors during reading/writing                    | `false`                                   |
-| `logger`       | `object`, optional  | Custom logger (`console`, `winston`, etc.)           | `console`                                 |
+| Option         | Type                | Description                                       | Default                                   |
+| -------------- | ------------------- | ------------------------------------------------- | ----------------------------------------- |
+| `dumpPath`     | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json` |
+| `dumpInterval` | `number`, optional  | Interval in milliseconds between auto-dumps       | `1000` (1 second)                         |
+| `verbose`      | `boolean`, optional | Log errors during reading/writing                 | `false`                                   |
+| `logger`       | `object`, optional  | Custom logger (`console`, `winston`, etc.)        | `console`                                 |
 
 ---
 
