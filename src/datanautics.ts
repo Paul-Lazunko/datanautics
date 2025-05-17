@@ -41,7 +41,9 @@ export class Datanautics {
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
-          exec(`echo ${PropertyAccessor.get(key, this.data).toString()} > ${this.options.dumpPath}/${key}`)
+          setTimeout(() => {
+            exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, () => {})
+          }, 0)
         }
       }
     } catch (e) {
