@@ -1,10 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, readdirSync } from 'fs';
-import { exec } from 'child_process';
 import { EventEmitter } from 'events';
+import { existsSync, createReadStream, truncate } from 'fs';
+import { exec } from 'child_process';
+import * as readline from 'readline';
 import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
 import { DatanauticsOptions } from '@options';
+import * as console from 'console';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
@@ -15,24 +17,35 @@ export class Datanautics {
     this.options = Object.assign(defaultDatanauticsOptions, options || {});
     this.data = {};
     this.eventEmitter = new EventEmitter();
-    this.eventEmitter = new EventEmitter();
-    if (!existsSync(this.options.dumpPath)) {
-      mkdirSync(this.options.dumpPath, { recursive: true });
-    }
-    try {
-      this.useDump();
-    } catch (e) {
-      if (this.options.verbose) {
-        this.options.logger.error(e);
-      }
-    }
-    this.eventEmitter.on(DUMP_EVENT, async () => {
-      await this.createDump();
-      setTimeout(() => {
+    if (existsSync(this.options.dumpPath)) {
+      this.useDump().catch(console.error).finally(() => {
+        this.eventEmitter.on(DUMP_EVENT, async () => {
+          await this.flushDump();
+          await this.createDump();
+          setTimeout(() => {
+            this.eventEmitter.emit(DUMP_EVENT);
+          }, this.options.dumpInterval);
+        });
         this.eventEmitter.emit(DUMP_EVENT);
-      }, this.options.dumpInterval);
-    });
-    this.eventEmitter.emit(DUMP_EVENT);
+      })
+    } else {
+      this.eventEmitter.on(DUMP_EVENT, async () => {
+        await this.flushDump();
+        await this.createDump();
+        setTimeout(() => {
+          this.eventEmitter.emit(DUMP_EVENT);
+        }, this.options.dumpInterval);
+      });
+      this.eventEmitter.emit(DUMP_EVENT);
+    }
+  }
+
+  protected flushDump(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      truncate(this.options.dumpPath, (error: Error) => {
+        error ? reject(error) : resolve();
+      })
+    })
   }
 
   protected async createDump() {
@@ -43,11 +56,9 @@ export class Datanautics {
         if (value !== undefined) {
           try {
             await new Promise((resolve, reject) => {
-              setTimeout(() => {
-                exec(`echo ${value.toString()} > ${this.options.dumpPath}/${key}`, (error) => {
-                  error ? reject(error) : resolve(true)
-                });
-              }, 0);
+              exec(`echo "${key} ${value.toString()}" >> ${this.options.dumpPath}`, (error) => {
+                error ? reject(error) : resolve(true)
+              });
             })
           } catch(e) {
             console.error(e)
@@ -61,19 +72,23 @@ export class Datanautics {
     }
   }
 
-  protected useDump() {
-    const files: string[] = readdirSync(this.options.dumpPath);
-    for (const file of files) {
-      if (file !== '.gitkeep') {
-        let value: string | number | boolean = readFileSync(`${this.options.dumpPath}/${file}`)
-          .toString()
-          .replace(/\n/g, '');
+  protected async useDump() {
+    const readStream = createReadStream(this.options.dumpPath);
+    const lines = readline.createInterface({
+      input: readStream,
+      crlfDelay: Infinity, // handles both \n and \r\n
+    });
+    for await (const line of lines) {
+      const data = line.split(' ');
+      const key: string = data[0];
+      let value:  string | number | boolean = data[1];
+      if (key && value) {
         if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
           value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
         } else if (/^false|true$/.test(value)) {
           value = /^true$/.test(value);
         }
-        PropertyAccessor.set(file, value, this.data);
+        PropertyAccessor.set(key, value, this.data);
       }
     }
   }
