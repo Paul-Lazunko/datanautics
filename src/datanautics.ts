@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { EventEmitter } from 'events';
 import { PropertyAccessor } from 'property-accessor';
 
@@ -15,13 +15,14 @@ export class Datanautics {
     this.data = {};
     this.eventEmitter = new EventEmitter();
     this.eventEmitter = new EventEmitter();
-    if (existsSync(this.options.dumpPath)) {
-      try {
-        this.data = JSON.parse(readFileSync(this.options.dumpPath).toString());
-      } catch (e) {
-        if (this.options.verbose) {
-          this.options.logger.error(e);
-        }
+    if (!existsSync(this.options.dumpPath)) {
+      mkdirSync(this.options.dumpPath, { recursive: true });
+    }
+    try {
+      this.useDump();
+    } catch (e) {
+      if (this.options.verbose) {
+        this.options.logger.error(e);
       }
     }
     this.eventEmitter.on(DUMP_EVENT, () => {
@@ -35,10 +36,29 @@ export class Datanautics {
 
   protected createDump() {
     try {
-      writeFileSync(this.options.dumpPath, JSON.stringify(this.data, null, 2), 'utf8');
+      const flat = PropertyAccessor.flat(this.data);
+      for (const key in flat) {
+        const value = PropertyAccessor.get(key, this.data);
+        if (value !== undefined) {
+          writeFileSync(`${this.options.dumpPath}/${key}`, PropertyAccessor.get(key, this.data).toString(), 'utf8');
+        }
+      }
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
+      }
+    }
+  }
+
+  protected useDump() {
+    const files: string[] = readdirSync(this.options.dumpPath);
+    for (const file of files) {
+      if (file !== '.gitkeep') {
+        let value: string | number = readFileSync(`${this.options.dumpPath}/${file}`).toString();
+        if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
+          value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
+        }
+        PropertyAccessor.set(file, value, this.data);
       }
     }
   }
