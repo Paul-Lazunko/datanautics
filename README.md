@@ -6,7 +6,7 @@ It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nes
 
 ---
 
-## ✨ Features
+## Features
 
 - Dot/bracket notation access (`a.b[0]['c']`)
 - Persistent JSON file storage (auto-saves at configurable intervals)
@@ -16,7 +16,7 @@ It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nes
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 npm install datanautics
@@ -24,7 +24,7 @@ npm install datanautics
 
 ---
 
-## 🛠 Usage
+## Usage
 
 ```ts
 const { Datanautics } = require('datanautics');
@@ -42,7 +42,7 @@ console.log(store.get('users[0].name')); // Output: Alice
 
 ---
 
-## ⚙️ Configuration Options
+## Configuration Options
 
 You can pass the following options to the constructor:
 
@@ -55,7 +55,7 @@ You can pass the following options to the constructor:
 
 ---
 
-## 🔧 Methods
+## Methods
 
 ### `set(key: string, value: any): boolean`
 
@@ -71,7 +71,7 @@ Returns `undefined` if the path does not exist or is non-evaluable.
 
 ---
 
-## 📂 Auto-Save Mechanism
+## Auto-Save Mechanism
 
 - A background event loop triggers a dump to `options.dumpPath` every `options.dumpInterval` ms.
 - All data is saved as a JSON file, preserving nested structures.
@@ -79,16 +79,16 @@ Returns `undefined` if the path does not exist or is non-evaluable.
 
 ---
 
-## ✅ Requirements
+## Requirements
 
 - Node.js 14+
 
 ---
 
-## 📚 Dependencies
+## Dependencies
 
 - [`property-accessor`](https://npmjs.com/package/property-accessor) – Used for safe deep get/set operations
 
 ---
 
-## 📄 [License](./LICENSE) MIT
+## [License](./LICENSE) MIT
