@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.6] - 2025-05-26
+
+### Added
+
+- Added store method;
+
 ## [2.2.5] - 2025-05-22
 
 ### Fixed
