@@ -69,6 +69,10 @@ Retrieves the value at the specified path.
 
 Returns `undefined` if the path does not exist or is non-evaluable.
 
+### `store(key: string): void`
+
+Explicitly creates dump
+
 ---
 
 ## Auto-Save Mechanism
