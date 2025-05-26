@@ -26,6 +26,10 @@ export class Datanautics {
     this.eventEmitter.emit(DUMP_EVENT);
   }
 
+  public store() {
+    return this.createDump();
+  }
+
   protected createDump() {
     try {
       const flat: Record<string, string> = PropertyAccessor.flat(this.data);
