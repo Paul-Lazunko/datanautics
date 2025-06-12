@@ -16,7 +16,6 @@
     "baseUrl": ".",
     "paths": {
       "@const": ["src/constants"],
-      "@helpers": ["src/helpers"],
       "@options": ["src/options"]
     }
   },

@@ -11,7 +11,7 @@ export class Datanautics {
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
-    this.options = Object.assign(defaultDatanauticsOptions, options || {});
+    this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
