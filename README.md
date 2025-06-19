@@ -47,11 +47,12 @@ console.log(store.get('users[0].name')); // Output: Alice
 You can pass the following options to the constructor:
 
 | Option         | Type                | Description                                       | Default                                   |
-| -------------- | ------------------- | ------------------------------------------------- | ----------------------------------------- |
+|----------------|---------------------|---------------------------------------------------|-------------------------------------------|
 | `dumpPath`     | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json` |
 | `dumpInterval` | `number`, optional  | Interval in milliseconds between auto-dumps       | `1000` (1 second)                         |
 | `verbose`      | `boolean`, optional | Log errors during reading/writing                 | `false`                                   |
 | `logger`       | `object`, optional  | Custom logger (`console`, `winston`, etc.)        | `console`                                 |
+|`cancelAutoSave`| `boolean`, optional | marker that cancels auto saving                   | false                                     |
 
 ---
 

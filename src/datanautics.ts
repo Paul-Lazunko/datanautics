@@ -19,11 +19,15 @@ export class Datanautics {
     }
     this.eventEmitter.on(DUMP_EVENT, async () => {
       this.createDump();
-      setTimeout(() => {
-        this.eventEmitter.emit(DUMP_EVENT);
-      }, this.options.dumpInterval);
+      if (!options.cancelAutoSave) {
+        setTimeout(() => {
+          this.eventEmitter.emit(DUMP_EVENT);
+        }, this.options.dumpInterval);
+      }
     });
-    this.eventEmitter.emit(DUMP_EVENT);
+    if (!options.cancelAutoSave) {
+      this.eventEmitter.emit(DUMP_EVENT);
+    }
   }
 
   public store() {
@@ -40,7 +44,7 @@ export class Datanautics {
           data.push(`${key} ${value.toString()}`);
         }
       }
-      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8')
+      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
@@ -52,7 +56,10 @@ export class Datanautics {
     const data = readFileSync(this.options.dumpPath).toString('utf8');
     const lines: string[] = data.split('\n');
     for (const line of lines) {
-      const [ k, v] = line.split(' ');
+      const [
+        k,
+        v,
+      ] = line.split(' ');
       const key = k.trim();
       if (v !== undefined) {
         let value: string | number | boolean = v.trim();
