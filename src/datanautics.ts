@@ -2,31 +2,42 @@ import { EventEmitter } from 'events';
 import { existsSync, writeFileSync, readFileSync } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
-import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
+import { READ_EVENT, WRITE_EVENT, defaultDatanauticsOptions } from '@const';
 import { DatanauticsOptions } from '@options';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
-  protected eventEmitter: EventEmitter;
+  protected writeEventEmitter: EventEmitter;
+  protected readEventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    this.eventEmitter = new EventEmitter();
+    this.writeEventEmitter = new EventEmitter();
+    this.readEventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
     }
-    this.eventEmitter.on(DUMP_EVENT, async () => {
+    this.writeEventEmitter.on(WRITE_EVENT, async () => {
       this.createDump();
-      if (!options.cancelAutoSave) {
-        setTimeout(() => {
-          this.eventEmitter.emit(DUMP_EVENT);
-        }, this.options.dumpInterval);
-      }
+      setTimeout(() => {
+        this.writeEventEmitter.emit(WRITE_EVENT);
+      }, this.options.dumpInterval);
     });
-    if (!options.cancelAutoSave) {
-      this.eventEmitter.emit(DUMP_EVENT);
+    this.readEventEmitter.on(READ_EVENT, async () => {
+      this.useDump();
+      setTimeout(() => {
+        this.readEventEmitter.emit(READ_EVENT);
+      }, this.options.dumpInterval);
+    });
+    switch (options.mode) {
+      case 'reader':
+        this.readEventEmitter.emit(READ_EVENT)
+        break;
+      case 'writer':
+        this.writeEventEmitter.emit(WRITE_EVENT)
+        break;
     }
   }
 

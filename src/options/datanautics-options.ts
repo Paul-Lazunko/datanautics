@@ -8,5 +8,5 @@ export type DatanauticsOptions = {
   dumpInterval?: number;
   verbose?: boolean;
   logger?: Logger;
-  cancelAutoSave?: boolean;
+  mode?: 'writer' | 'reader';
 };

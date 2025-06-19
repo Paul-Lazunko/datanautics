@@ -9,4 +9,5 @@ export const defaultDatanauticsOptions: DatanauticsOptions = {
   verbose: true,
   logger: console,
   dumpPath: resolve(__dirname, '../../data/data.txt'),
+  mode: 'writer'
 };

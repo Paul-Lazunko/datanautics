@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.9] - 2025-06-20
+
+### Added
+
+- Added **mode** to options (writer|reader) that define the instance behavior
+
+### Removed
+
+- Removed **cancelAutoSave** from options;
+
 ## [2.2.8] - 2025-06-20
 
 ### Added
