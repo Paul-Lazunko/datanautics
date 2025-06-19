@@ -1,6 +1,6 @@
 # Datanautics
 
-**Datanautics** is a lightweight key-value storage system with support for nested property access, persistent dumps to disk, and configurable autosave intervals.
+**Datanautics** is a lightweight key-value storage system with support for nested property access and persistent dumps to disk.
 
 It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nested data**, and periodically saves the current state to a JSON file for durability.
 
@@ -31,7 +31,6 @@ const { Datanautics } = require('datanautics');
 
 const store = new Datanautics({
   dumpPath: './data.json',
-  dumpInterval: 1000, // every 1 second
   verbose: true,
   logger: console,
 });
@@ -49,10 +48,8 @@ You can pass the following options to the constructor:
 | Option         | Type                | Description                                       | Default                                  |
 |----------------|---------------------|---------------------------------------------------|------------------------------------------|
 | `dumpPath`     | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json`|
-| `dumpInterval` | `number`, optional  | Interval in milliseconds between auto-dumps       | `1000` (1 second)                        |
 | `verbose`      | `boolean`, optional | Log errors during reading/writing                 | `false`                                  |
 | `logger`       | `object`, optional  | Custom logger (`console`, `winston`, etc.)        | `console`                                |
-| `mode`         | `string`, optional  | Parameter that define behavior (reader or writer) | `writer`                                 |
 ---
 
 ## Methods
@@ -75,11 +72,9 @@ Explicitly creates dump
 
 ---
 
-## Auto-Save Mechanism
+## Event based Auto-Save Mechanism
 
-- A background event loop triggers a dump to `options.dumpPath` every `options.dumpInterval` ms.
-- All data is saved as a JSON file, preserving nested structures.
-- On startup, the class will attempt to read and restore previous data from the file.
+- Settings data triggers a dump to `options.dumpPath`;
 
 ---
 

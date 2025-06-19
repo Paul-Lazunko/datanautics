@@ -1,44 +1,22 @@
-import { EventEmitter } from 'events';
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, writeFileSync, readFileSync, watchFile } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
-import { READ_EVENT, WRITE_EVENT, defaultDatanauticsOptions } from '@const';
+import { defaultDatanauticsOptions } from '@const';
 import { DatanauticsOptions } from '@options';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
-  protected writeEventEmitter: EventEmitter;
-  protected readEventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    this.writeEventEmitter = new EventEmitter();
-    this.readEventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
     }
-    this.writeEventEmitter.on(WRITE_EVENT, async () => {
-      this.createDump();
-      setTimeout(() => {
-        this.writeEventEmitter.emit(WRITE_EVENT);
-      }, this.options.dumpInterval);
-    });
-    this.readEventEmitter.on(READ_EVENT, async () => {
+    watchFile(this.options.dumpPath, () => {
       this.useDump();
-      setTimeout(() => {
-        this.readEventEmitter.emit(READ_EVENT);
-      }, this.options.dumpInterval);
-    });
-    switch (options.mode) {
-      case 'reader':
-        this.readEventEmitter.emit(READ_EVENT)
-        break;
-      case 'writer':
-        this.writeEventEmitter.emit(WRITE_EVENT)
-        break;
-    }
+    })
   }
 
   public store() {
@@ -56,10 +34,12 @@ export class Datanautics {
         }
       }
       writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
+      return true;
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
       }
+      return false;
     }
   }
 
@@ -85,7 +65,7 @@ export class Datanautics {
   }
 
   public set(key: string, value: any): boolean {
-    return PropertyAccessor.set(key, value, this.data);
+    return PropertyAccessor.set(key, value, this.data) && this.createDump();
   }
 
   public get(key: string): any {

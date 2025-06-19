@@ -8,7 +8,7 @@ const { setTimeout } = require('timers');
 const dumpPath = resolve(__dirname, './data.txt');
 const data = { user: { firstname: 'John', lastname: 'Doe' }, score: [27] };
 
-const db = new Datanautics({ dumpPath, dumpInterval: 100 });
+const db = new Datanautics({ dumpPath });
 
 assert.equal(db.set('user.firstname', data.user.firstname), true);
 assert.equal(db.set('user.lastname', data.user.lastname), true);

@@ -5,8 +5,6 @@ interface Logger {
 
 export type DatanauticsOptions = {
   dumpPath: string;
-  dumpInterval?: number;
   verbose?: boolean;
   logger?: Logger;
-  mode?: 'writer' | 'reader';
 };
