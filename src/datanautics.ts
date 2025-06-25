@@ -1,22 +1,37 @@
+import { EventEmitter } from 'events';
 import { existsSync, writeFileSync, readFileSync, watchFile } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
-import { defaultDatanauticsOptions } from '@const';
+import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
 import { DatanauticsOptions } from '@options';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
+  protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
+    this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
+    } else {
+      writeFileSync(this.options.dumpPath, '', 'utf8');
     }
-    watchFile(this.options.dumpPath, () => {
-      this.useDump();
-    })
+    if (options.writer) {
+      this.eventEmitter.on(DUMP_EVENT, async () => {
+        this.createDump();
+        setTimeout(() => {
+          this.eventEmitter.emit(DUMP_EVENT);
+        }, this.options.dumpInterval);
+      });
+      this.eventEmitter.emit(DUMP_EVENT);
+    } else {
+      watchFile(this.options.dumpPath, () => {
+        this.useDump();
+      })
+    }
   }
 
   public store() {
@@ -33,13 +48,11 @@ export class Datanautics {
           data.push(`${key} ${value.toString()}`);
         }
       }
-      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
-      return true;
+      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8')
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
       }
-      return false;
     }
   }
 
@@ -47,10 +60,7 @@ export class Datanautics {
     const data = readFileSync(this.options.dumpPath).toString('utf8');
     const lines: string[] = data.split('\n');
     for (const line of lines) {
-      const [
-        k,
-        v,
-      ] = line.split(' ');
+      const [ k, v] = line.split(' ');
       const key = k.trim();
       if (v !== undefined) {
         let value: string | number | boolean = v.trim();
@@ -65,7 +75,7 @@ export class Datanautics {
   }
 
   public set(key: string, value: any): boolean {
-    return PropertyAccessor.set(key, value, this.data) && this.createDump();
+    return PropertyAccessor.set(key, value, this.data);
   }
 
   public get(key: string): any {
