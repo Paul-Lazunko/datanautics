@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.0] - 2025-06-25 (**Breaking changes!**)
+
+### Added
+
+- Returned Auto-Save Mechanism as more efficient;
+- Added **writer**  (boolean, default true) to options, this property enables auto-syncs
+
+---
+
 ## [3.0.0] - 2025-06-20 (**Breaking changes!**)
 
 ### Removed
