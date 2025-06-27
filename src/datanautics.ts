@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { existsSync, writeFileSync, readFileSync, watchFile } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
@@ -11,19 +11,27 @@ export class Datanautics {
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
-    this.options = Object.assign(defaultDatanauticsOptions, options || {});
+    this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
+    } else {
+      writeFileSync(this.options.dumpPath, '', 'utf8');
     }
-    this.eventEmitter.on(DUMP_EVENT, async () => {
-      this.createDump();
-      setTimeout(() => {
-        this.eventEmitter.emit(DUMP_EVENT);
-      }, this.options.dumpInterval);
-    });
-    this.eventEmitter.emit(DUMP_EVENT);
+    if (options.writer) {
+      this.eventEmitter.on(DUMP_EVENT, async () => {
+        this.createDump();
+        setTimeout(() => {
+          this.eventEmitter.emit(DUMP_EVENT);
+        }, this.options.dumpInterval);
+      });
+      this.eventEmitter.emit(DUMP_EVENT);
+    } else {
+      watchFile(this.options.dumpPath, () => {
+        this.useDump();
+      })
+    }
   }
 
   public store() {

@@ -8,5 +8,6 @@ export const defaultDatanauticsOptions: DatanauticsOptions = {
   dumpInterval: DEFAULT_DUMP_INTERVAL,
   verbose: true,
   logger: console,
-  dumpPath: resolve(__dirname, '../../data/data.txt'),
+  dumpPath: resolve(__dirname, '../../data/data'),
+  writer: true
 };

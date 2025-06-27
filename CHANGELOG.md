@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.0.0] - 2025-06-25 (**Breaking changes!**)
+
+### Added
+
+- Returned Auto-Save Mechanism as more efficient;
+- Added **writer**  (boolean, default true) to options, this property enables auto-syncs
+
+---
+
+## [3.0.0] - 2025-06-20 (**Breaking changes!**)
+
+### Removed
+
+- Replaced Auto-Save Mechanism with Event Based Save Mechanism (triggers once you change data);
+- Removed **mode** and **dumpInterval** from options
+
+---
+
+
+## [2.2.9] - 2025-06-20
+
+### Added
+
+- Added **mode** to options (writer|reader) that define the instance behavior
+
+### Removed
+
+- Removed **cancelAutoSave** from options;
+
+## [2.2.8] - 2025-06-20
+
+### Added
+
+- Added **cancelAutoSave** to options;
+
+## [2.2.7] - 2025-06-12
+
+### Fixed
+
+- Play with multiple items - fixed options setting in the constructor;
+
 ## [2.2.6] - 2025-05-26
 
 ### Added
@@ -42,6 +83,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Refactor the data storing avoiding async functionality
 
 ---
+
 ## [2.2.0] - 2025-05-17
 
 ### Fixed
