@@ -8,11 +8,13 @@ import { DatanauticsOptions } from '@options';
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
+  protected timeLog: Record<string, number>;
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
+    this.timeLog = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
@@ -45,7 +47,7 @@ export class Datanautics {
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
         if (value !== undefined) {
-          data.push(`${key} ${value.toString()}`);
+          data.push(`${key} ${value.toString()} ${this.timeLog[key] ? this.timeLog[key] : ''}`);
         }
       }
       writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8')
@@ -60,7 +62,9 @@ export class Datanautics {
     const data = readFileSync(this.options.dumpPath).toString('utf8');
     const lines: string[] = data.split('\n');
     for (const line of lines) {
-      const [ k, v] = line.split(' ');
+      const [ k, ...rest] = line.split(' ');
+      const timestamp = rest.pop();
+      const v = rest.join(' ');
       const key = k.trim();
       if (v !== undefined) {
         let value: string | number | boolean = v.trim();
@@ -70,11 +74,13 @@ export class Datanautics {
           value = /^true$/.test(value);
         }
         PropertyAccessor.set(key, value, this.data);
+        this.timeLog[key] = parseInt(timestamp, 10);
       }
     }
   }
 
   public set(key: string, value: any): boolean {
+    this.timeLog[key] = new Date().getTime();
     return PropertyAccessor.set(key, value, this.data);
   }
 
