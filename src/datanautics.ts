@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { existsSync, writeFileSync, readFileSync, watchFile } from 'fs';
+import { existsSync, writeFileSync, readFileSync, watch } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
@@ -30,7 +30,7 @@ export class Datanautics {
       });
       this.eventEmitter.emit(DUMP_EVENT);
     } else {
-      watchFile(this.options.dumpPath, () => {
+      watch(this.options.dumpPath, () => {
         this.useDump();
       })
     }
@@ -63,7 +63,10 @@ export class Datanautics {
     const lines: string[] = data.split('\n');
     for (const line of lines) {
       const [ k, ...rest] = line.split(' ');
-      const timestamp = rest.pop();
+      let timestamp: string;
+      if (rest.length > 1 && /\d{13}/.test(rest[rest.length -1 ])) {
+        timestamp = rest.pop();
+      }
       const v = rest.join(' ');
       const key = k.trim();
       if (v !== undefined) {
