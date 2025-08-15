@@ -2,19 +2,17 @@ import { EventEmitter } from 'events';
 import { existsSync, writeFileSync, readFileSync, watch } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
-import { DUMP_EVENT, defaultDatanauticsOptions } from '@const';
+import { DUMP_EVENT, defaultDatanauticsOptions, falsyValues, numberRegExp, intRegExp, boolRegExp } from '@const';
 import { DatanauticsOptions } from '@options';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
-  protected timeLog: Record<string, number>;
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    this.timeLog = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
@@ -32,7 +30,7 @@ export class Datanautics {
     } else {
       watch(this.options.dumpPath, () => {
         this.useDump();
-      })
+      });
     }
   }
 
@@ -46,11 +44,11 @@ export class Datanautics {
       const data: any[] = [];
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
-        if (value !== undefined) {
-          data.push(`${key} ${value.toString()} ${this.timeLog[key] ? this.timeLog[key] : ''}`);
+        if (value || falsyValues.includes(value)) {
+          data.push(`${key} ${value.toString()}`);
         }
       }
-      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8')
+      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
@@ -62,28 +60,25 @@ export class Datanautics {
     const data = readFileSync(this.options.dumpPath).toString('utf8');
     const lines: string[] = data.split('\n');
     for (const line of lines) {
-      const [ k, ...rest] = line.split(' ');
-      let timestamp: string;
-      if (rest.length > 1 && /\d{13}/.test(rest[rest.length -1 ])) {
-        timestamp = rest.pop();
-      }
+      const [
+        k,
+        ...rest
+      ] = line.split(' ');
       const v = rest.join(' ');
       const key = k.trim();
       if (v !== undefined) {
-        let value: string | number | boolean = v.trim();
-        if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
-          value = /^[+-]?\d+$/.test(value) ? parseInt(value, 10) : parseFloat(value);
-        } else if (/^false|true$/.test(value)) {
-          value = /^true$/.test(value);
+        let value: any = v.trim();
+        if (numberRegExp.test(value)) {
+          value = intRegExp.test(value) ? BigInt(value) : parseFloat(value);
+        } else if (boolRegExp.test(value)) {
+          value = value === 'true';
         }
         PropertyAccessor.set(key, value, this.data);
-        this.timeLog[key] = parseInt(timestamp, 10);
       }
     }
   }
 
   public set(key: string, value: any): boolean {
-    this.timeLog[key] = new Date().getTime();
     return PropertyAccessor.set(key, value, this.data);
   }
 
