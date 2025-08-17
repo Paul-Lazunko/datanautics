@@ -69,7 +69,16 @@ export class Datanautics {
       if (v !== undefined) {
         let value: any = v.trim();
         if (numberRegExp.test(value)) {
-          value = intRegExp.test(value) ? BigInt(value) : parseFloat(value);
+          if (intRegExp.test(value)) {
+            const valueInt: number = Number.parseInt(value, 10)
+            if ( !Number.isSafeInteger(valueInt)) {
+              value = BigInt(value);
+            } else {
+              value = valueInt;
+            }
+          } else {
+            value = parseFloat(value);
+          }
         } else if (boolRegExp.test(value)) {
           value = value === 'true';
         }
