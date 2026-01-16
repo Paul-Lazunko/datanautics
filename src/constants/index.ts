@@ -3,3 +3,4 @@ export * from './events';
 export * from './falsy-values';
 export * from './interval';
 export * from './reg-exp';
+export * from './separator';

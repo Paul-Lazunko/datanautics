@@ -6,7 +6,7 @@ const { setTimeout } = require('timers');
 
 const dumpPath = resolve(__dirname, './data.txt');
 const data = {
-  user: { firstname: 'John Junior Frost', lastname: 'Doe' },
+  user: { firstname: 'John Junior Frost 11', lastname: 'Doe' },
   score: [27],
   nested: { key: BigInt('1000000000000000000000') },
 };
@@ -30,3 +30,4 @@ setTimeout(() => {
   console.log('tests passed');
   process.exit(0);
 }, 2000);
+

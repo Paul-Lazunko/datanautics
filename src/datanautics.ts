@@ -4,15 +4,18 @@ import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions, falsyValues, numberRegExp, intRegExp, boolRegExp } from '@const';
 import { DatanauticsOptions } from '@options';
+import { normalizeDump } from './helpers';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
+  protected updateTracking: Record<string, number>;
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
+    this.updateTracking = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
@@ -34,6 +37,10 @@ export class Datanautics {
     }
   }
 
+  public normalizeDump() {
+    return normalizeDump(this.options.dumpPath);
+  }
+
   public store() {
     return this.createDump();
   }
@@ -44,8 +51,9 @@ export class Datanautics {
       const data: any[] = [];
       for (const key in flat) {
         const value = PropertyAccessor.get(key, this.data);
+        const timestamp = PropertyAccessor.get(key, this.updateTracking) || Date.now();
         if (value || falsyValues.includes(value)) {
-          data.push(`${key} ${value.toString()}`);
+          data.push(`${timestamp} ${key} ${value.toString()}`);
         }
       }
       writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
@@ -61,17 +69,18 @@ export class Datanautics {
     const lines: string[] = data.split('\n');
     for (const line of lines) {
       const [
+        t,
         k,
         ...rest
       ] = line.split(' ');
+      const key = k?.trim();
       const v = rest.join(' ');
-      const key = k.trim();
-      if (v !== undefined) {
+      if (key && v !== undefined) {
         let value: any = v.trim();
         if (numberRegExp.test(value)) {
           if (intRegExp.test(value)) {
             const valueInt: number = Number.parseInt(value, 10)
-            if ( !Number.isSafeInteger(valueInt)) {
+            if (!Number.isSafeInteger(valueInt)) {
               value = BigInt(value);
             } else {
               value = valueInt;
@@ -83,11 +92,16 @@ export class Datanautics {
           value = value === 'true';
         }
         PropertyAccessor.set(key, value, this.data);
+        PropertyAccessor.set(key, parseInt(t, 10), this.updateTracking);
+      } else {
+        PropertyAccessor.delete(key, this.data);
+        PropertyAccessor.delete(key, this.updateTracking);
       }
     }
   }
 
   public set(key: string, value: any): boolean {
+    PropertyAccessor.set(key, Date.now(), this.updateTracking);
     return PropertyAccessor.set(key, value, this.data);
   }
 
