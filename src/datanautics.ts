@@ -47,10 +47,10 @@ export class Datanautics {
 
   protected createDump() {
     try {
-      const flat: Record<string, string> = PropertyAccessor.flat(this.data);
+      const flat: Record<string, string> = PropertyAccessor.flat(this.data, '␣');
       const data: any[] = [];
       for (const key in flat) {
-        const value = PropertyAccessor.get(key, this.data);
+        const value = PropertyAccessor.get(key.replace(/␣/g, ' '), this.data);
         const timestamp = PropertyAccessor.get(key, this.updateTracking) || Date.now();
         if (value || falsyValues.includes(value)) {
           data.push(`${timestamp} ${key} ${value.toString()}`);
@@ -68,12 +68,15 @@ export class Datanautics {
     const data = readFileSync(this.options.dumpPath).toString('utf8');
     const lines: string[] = data.split('\n');
     for (const line of lines) {
+      if (!line) {
+        continue;
+      }
       const [
         t,
         k,
         ...rest
       ] = line.split(' ');
-      const key = k?.trim();
+      const key = k.trim().replace(/␣/g, ' ');
       const v = rest.join(' ');
       if (key && v !== undefined) {
         let value: any = v.trim();

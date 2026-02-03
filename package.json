@@ -1,6 +1,6 @@
 {
   "name": "datanautics",
-  "version": "4.3.1",
+  "version": "4.4.0",
   "description": "",
   "keywords": [
     "data store",
@@ -21,7 +21,7 @@
     "runtime": "node dist/index.js"
   },
   "dependencies": {
-    "property-accessor": "^2.4.0"
+    "property-accessor": "^2.5.0"
   },
   "devDependencies": {
     "@types/node": "22.14.0",
