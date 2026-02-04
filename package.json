@@ -21,7 +21,7 @@
     "runtime": "node dist/index.js"
   },
   "dependencies": {
-    "property-accessor": "^2.5.0"
+    "property-accessor": "^2.5.1"
   },
   "devDependencies": {
     "@types/node": "22.14.0",
