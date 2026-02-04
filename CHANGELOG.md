@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [4.5.0] - 2025-08-11
+
+### Added
+
+- timestamps in dumps, preparing for multi-instance synchronization
+
+## [4.4.0] - 2025-08-11
+
+### Fixed
+
+- handle quoted property names correctly
+
 ## [4.3.1] - 2025-08-11
 
 ### Fixed
