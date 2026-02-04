@@ -71,11 +71,21 @@ export class Datanautics {
       if (!line) {
         continue;
       }
-      const [
-        t,
-        k,
-        ...rest
-      ] = line.split(' ');
+      const lineData: string[] = line.split(' ');
+      let t: string;
+      let k: string;
+      let rest: any;
+      if (lineData.length > 2) {
+        [
+          t,
+          k,
+          ...rest
+        ] = lineData;
+
+      } else {
+        t = Date.now().toString(10);
+        [ k, ...rest ] = lineData;
+      }
       const key = k.trim().replace(/␣/g, ' ');
       const v = rest.join(' ');
       if (key && v !== undefined) {
