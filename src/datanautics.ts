@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import { existsSync, writeFileSync, readFileSync, watch } from 'fs';
+import { existsSync, writeFileSync, readFileSync, watch, writeFile } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 
 import { DUMP_EVENT, defaultDatanauticsOptions, falsyValues, numberRegExp, intRegExp, boolRegExp } from '@const';
@@ -9,12 +9,14 @@ import { normalizeDump } from './helpers';
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
+  protected dumpData: Map<string,string>;
   protected updateTracking: Record<string, number>;
   protected eventEmitter: EventEmitter;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
+    this.dumpData = new Map();
     this.updateTracking = {};
     this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
@@ -48,15 +50,21 @@ export class Datanautics {
   protected createDump() {
     try {
       const flat: Record<string, string> = PropertyAccessor.flat(this.data, '␣');
-      const data: any[] = [];
+      const now: number = Date.now();
+      this.dumpData.clear();
       for (const key in flat) {
         const value = PropertyAccessor.get(key.replace(/␣/g, ' '), this.data);
-        const timestamp = PropertyAccessor.get(key, this.updateTracking) || Date.now();
+        const timestamp = PropertyAccessor.get(key, this.updateTracking) || now;
         if (value || falsyValues.includes(value)) {
-          data.push(`${timestamp} ${key} ${value.toString()}`);
+          this.dumpData.set(key, `${timestamp} ${key} ${value.toString()}`);
         }
       }
-      writeFileSync(this.options.dumpPath, data.join('\n'), 'utf8');
+      writeFile(this.options.dumpPath, Array.from(this.dumpData.values()).join('\n'), 'utf8', (error: Error) => {
+          if (error) {
+            this.options.logger?.error(error);
+          }
+        }
+      );
     } catch (e) {
       if (this.options.verbose) {
         this.options.logger.error(e);
@@ -81,10 +89,12 @@ export class Datanautics {
           k,
           ...rest
         ] = lineData;
-
       } else {
         t = Date.now().toString(10);
-        [ k, ...rest ] = lineData;
+        [
+          k,
+          ...rest
+        ] = lineData;
       }
       const key = k.trim().replace(/␣/g, ' ');
       const v = rest.join(' ');
@@ -92,7 +102,7 @@ export class Datanautics {
         let value: any = v.trim();
         if (numberRegExp.test(value)) {
           if (intRegExp.test(value)) {
-            const valueInt: number = Number.parseInt(value, 10)
+            const valueInt: number = Number.parseInt(value, 10);
             if (!Number.isSafeInteger(valueInt)) {
               value = BigInt(value);
             } else {
