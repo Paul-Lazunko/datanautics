@@ -30,4 +30,3 @@ setTimeout(() => {
   console.log('tests passed');
   process.exit(0);
 }, 2000);
-
