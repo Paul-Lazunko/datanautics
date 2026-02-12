@@ -1,6 +1,6 @@
 {
   "name": "datanautics",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "",
   "keywords": [
     "data store",
@@ -17,7 +17,7 @@
     "eslint": "eslint src --ext .ts",
     "prettier-check": "prettier . --check",
     "prettier-write": "prettier . --write",
-    "test": "node test/test.js",
+    "test": "node test/test.cjs",
     "runtime": "node dist/index.js"
   },
   "dependencies": {
