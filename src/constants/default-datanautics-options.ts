@@ -6,6 +6,7 @@ import { DatanauticsOptions } from '@options';
 export const defaultDatanauticsOptions: DatanauticsOptions = {
   verbose: true,
   logger: console,
-  dumpPath: resolve(__dirname, '../../data/data'),
+  pathToDumpFile: resolve(__dirname, '../../data/data'),
+  storingInterval: 10000,
   writer: true,
 };

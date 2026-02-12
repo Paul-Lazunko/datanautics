@@ -1,49 +1,51 @@
 import { existsSync, writeFileSync, watch, createWriteStream, WriteStream } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
-const signals = [
-  'SIGINT',
-  'SIGTERM',
-];
 
 import { defaultDatanauticsOptions, numberRegExp, intRegExp, boolRegExp, objRegEx, objExtractRegEx } from '@const';
 import { DatanauticsOptions } from '@options';
-import { processFileByLine, serializeValue } from './helpers';
+import { processFileByLine, serializeValue } from '@helper';
+
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
-  protected stream: WriteStream;
-  private isRestoring: boolean;
+  protected lines: Map<string, string>;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    if (!existsSync(this.options.dumpPath)) {
-      writeFileSync(this.options.dumpPath, '', 'utf8');
+    this.lines = new Map<string, string>();
+    if (!existsSync(this.options.pathToDumpFile)) {
+      writeFileSync(this.options.pathToDumpFile, '', 'utf8');
     }
   }
 
   public async init() {
     await this.restoreFromFile();
-    if (this.options.writer) {
-      this.stream = createWriteStream(this.options.dumpPath);
-      signals.forEach((signal) => {
-        process.once(signal, async () => {
-          this.stream?.end((error: Error) => {
-            console.log('Closed stream', error);
-          });
-        });
-      });
-    } else {
-      watch(this.options.dumpPath, async () => {
+    if (!this.options.writer) {
+      watch(this.options.pathToDumpFile, async () => {
         await this.restoreFromFile();
       });
     }
   }
 
+  public async store() {
+    const stream: WriteStream = createWriteStream(this.options.pathToDumpFile,{
+      flags: 'w',
+      encoding: 'utf8',
+      autoClose: true
+    });
+    const lines = this.lines.values();
+    for (const line of lines) {
+      if (!stream.write(line)) {
+        await new Promise(resolve => stream.once('drain', () => resolve(true)));
+      }
+    }
+    await new Promise(resolve => stream.end(resolve));
+  }
+
   protected async restoreFromFile() {
-    this.isRestoring = true;
-    await processFileByLine(this.options.dumpPath, (line: string) => {
+    await processFileByLine(this.options.pathToDumpFile, (line: string) => {
       if (!line) {
         return;
       }
@@ -91,24 +93,23 @@ export class Datanautics {
         PropertyAccessor.delete(key, this.data);
       }
     });
-    this.isRestoring = false;
   }
 
   public set(key: string, value: any): boolean {
     const result: boolean = PropertyAccessor.set(key, value, this.data);
     if (this.options.writer) {
-      this.store(key, value);
+      this.storeKeyValue(key, value);
     }
     return result;
   }
 
-  private store(key: string, value: any) {
+  private storeKeyValue(key: string, value: any) {
     const now = Date.now();
     const keys: string[] = PropertyAccessor.collectKeys(key, value);
     for (const k of keys) {
       const nk: string = k.replace(/\s/g, '␣');
       const v = PropertyAccessor.get(k, this.data);
-      this.stream.write(`${now} ${nk} ${serializeValue(v)}\n`);
+      this.lines.set(k, `${now} ${nk} ${serializeValue(v)}\n`);
     }
   }
 
