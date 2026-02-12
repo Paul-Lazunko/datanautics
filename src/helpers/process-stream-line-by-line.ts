@@ -18,8 +18,8 @@ export function processFileByLine(dumpPath: string, onLine: (line: string) => vo
       if (leftover) {
         await onLine(leftover);
       }
-      resolve()
+      resolve();
     });
-    stream.on('error',(error: Error) => reject(error));
+    stream.on('error', (error: Error) => reject(error));
   });
 }

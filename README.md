@@ -48,7 +48,7 @@ console.log(store.get('users[0].name')); // Output: Alice
 You can pass the following options to the constructor:
 
 | Option     | Type                | Description                                       | Default                                   |
-|------------| ------------------- |---------------------------------------------------|-------------------------------------------|
+| ---------- | ------------------- | ------------------------------------------------- | ----------------------------------------- |
 | `dumpPath` | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json` |
 | `verbose`  | `boolean`, optional | Log errors during reading/writing                 | `false`                                   |
 | `writer`   | `boolean`, optional | master mode if true                               | `true`                                    |
@@ -57,7 +57,9 @@ You can pass the following options to the constructor:
 ---
 
 ## Methods
+
 ### `init(): Promise<void>`
+
 Initializes created instance and restores data;
 
 ### `set(key: string, value: any): boolean`

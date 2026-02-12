@@ -21,7 +21,6 @@ export class Datanautics {
     if (!existsSync(this.options.dumpPath)) {
       writeFileSync(this.options.dumpPath, '', 'utf8');
     }
-
   }
 
   public async init() {
@@ -37,14 +36,14 @@ export class Datanautics {
       });
     } else {
       watch(this.options.dumpPath, async () => {
-        await this.restoreFromFile()
+        await this.restoreFromFile();
       });
     }
   }
 
-  protected async  restoreFromFile() {
+  protected async restoreFromFile() {
     this.isRestoring = true;
-     await processFileByLine(this.options.dumpPath, (line: string) => {
+    await processFileByLine(this.options.dumpPath, (line: string) => {
       if (!line) {
         return;
       }
@@ -96,7 +95,7 @@ export class Datanautics {
   }
 
   public set(key: string, value: any): boolean {
-    const result: boolean =  PropertyAccessor.set(key, value, this.data);
+    const result: boolean = PropertyAccessor.set(key, value, this.data);
     if (this.options.writer) {
       this.store(key, value);
     }
