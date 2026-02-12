@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [8.0.0] - 2025-02-11
+
+### Added
+
+- Moved data restoring to the separate init() method.
+- Moved data storing to the separate store() method.
+- Upgraded storing algorithm.
+
+### Changed
+
+- options.dumpPath -> options.pathToDumpFile
+- options.dumpInterval -> options.storingInterval
+
+
 ## [7.0.0] - 2025-02-11
 
 ### Added
