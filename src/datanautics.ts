@@ -1,75 +1,41 @@
-import { EventEmitter } from 'events';
-import { existsSync, writeFileSync, readFileSync, watch, writeFile } from 'fs';
+import { existsSync, writeFileSync, readFileSync, watch, createWriteStream, WriteStream } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
+const signals = [
+  'SIGINT',
+  'SIGTERM',
+];
 
-import { DUMP_EVENT, defaultDatanauticsOptions, falsyValues, numberRegExp, intRegExp, boolRegExp } from '@const';
+import { defaultDatanauticsOptions, numberRegExp, intRegExp, boolRegExp, objRegEx, objExtractRegEx } from '@const';
 import { DatanauticsOptions } from '@options';
-import { normalizeDump } from './helpers';
+import { serializeValue } from './helpers';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
-  protected dumpData: Map<string,string>;
-  protected updateTracking: Record<string, number>;
-  protected eventEmitter: EventEmitter;
+  protected stream: WriteStream;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    this.dumpData = new Map();
-    this.updateTracking = {};
-    this.eventEmitter = new EventEmitter();
     if (existsSync(this.options.dumpPath)) {
       this.useDump();
     } else {
       writeFileSync(this.options.dumpPath, '', 'utf8');
     }
     if (options.writer) {
-      this.eventEmitter.on(DUMP_EVENT, async () => {
-        this.createDump();
-        setTimeout(() => {
-          this.eventEmitter.emit(DUMP_EVENT);
-        }, this.options.dumpInterval);
-      });
-      this.eventEmitter.emit(DUMP_EVENT);
+      this.stream = createWriteStream(this.options.dumpPath);
     } else {
       watch(this.options.dumpPath, () => {
         this.useDump();
       });
     }
-  }
-
-  public normalizeDump() {
-    return normalizeDump(this.options.dumpPath);
-  }
-
-  public store() {
-    return this.createDump();
-  }
-
-  protected createDump() {
-    try {
-      const flat: Record<string, string> = PropertyAccessor.flat(this.data, '␣');
-      const now: number = Date.now();
-      this.dumpData.clear();
-      for (const key in flat) {
-        const value = PropertyAccessor.get(key.replace(/␣/g, ' '), this.data);
-        const timestamp = PropertyAccessor.get(key, this.updateTracking) || now;
-        if (value || falsyValues.includes(value)) {
-          this.dumpData.set(key, `${timestamp} ${key} ${value.toString()}`);
-        }
-      }
-      writeFile(this.options.dumpPath, Array.from(this.dumpData.values()).join('\n'), 'utf8', (error: Error) => {
-          if (error) {
-            this.options.logger?.error(error);
-          }
-        }
-      );
-    } catch (e) {
-      if (this.options.verbose) {
-        this.options.logger.error(e);
-      }
-    }
+    signals.forEach((signal) => {
+      process.once(signal, async () => {
+        this.stream.end((error: Error) => {
+          console.log('closed stream', error);
+        });
+      });
+    });
   }
 
   protected useDump() {
@@ -80,17 +46,15 @@ export class Datanautics {
         continue;
       }
       const lineData: string[] = line.split(' ');
-      let t: string;
       let k: string;
       let rest: any;
       if (lineData.length > 2) {
         [
-          t,
+          ,
           k,
           ...rest
         ] = lineData;
       } else {
-        t = Date.now().toString(10);
         [
           k,
           ...rest
@@ -113,19 +77,29 @@ export class Datanautics {
           }
         } else if (boolRegExp.test(value)) {
           value = value === 'true';
+        } else if (objRegEx.test(value)) {
+          try {
+            value = JSON.parse(value.replace(objExtractRegEx, ''));
+          } catch (e) {
+            value = value.toString();
+          }
         }
         PropertyAccessor.set(key, value, this.data);
-        PropertyAccessor.set(key, parseInt(t, 10), this.updateTracking);
       } else {
         PropertyAccessor.delete(key, this.data);
-        PropertyAccessor.delete(key, this.updateTracking);
       }
     }
   }
 
   public set(key: string, value: any): boolean {
-    PropertyAccessor.set(key, Date.now(), this.updateTracking);
+    this.store(key, value);
     return PropertyAccessor.set(key, value, this.data);
+  }
+
+  private store(key: string, value: any) {
+    const baseKey = key.trim().replace(/\s/g, '␣');
+    const now = Date.now();
+    this.stream.write(`${now} ${baseKey} ${serializeValue(value)}\n`);
   }
 
   public get(key: string): any {
