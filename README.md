@@ -74,6 +74,10 @@ Retrieves the value at the specified path.
 
 Returns `undefined` if the path does not exist or is non-evaluable.
 
+### `store(key: string): Promise<void>`
+
+Asynchronously stores data into file defined in _options.pathToDumpFile_
+
 ---
 
 ## Requirements
