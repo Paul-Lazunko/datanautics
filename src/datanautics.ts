@@ -21,10 +21,10 @@ export class Datanautics {
   }
 
   public async init() {
-    await this.restoreFromFile();
+    await this.restore();
     if (!this.options.writer) {
       watch(this.options.pathToDumpFile, async () => {
-        await this.restoreFromFile();
+        await this.restore();
       });
     }
   }
@@ -44,7 +44,7 @@ export class Datanautics {
     await new Promise(resolve => stream.end(resolve));
   }
 
-  protected async restoreFromFile() {
+  protected async restore() {
     await processFileByLine(this.options.pathToDumpFile, (line: string) => {
       if (!line) {
         return;
