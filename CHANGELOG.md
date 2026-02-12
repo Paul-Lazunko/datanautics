@@ -5,12 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [6.0.0] - 2025-02-11
+## [7.0.0] - 2025-02-11
 
 ### Added
 
 - Moved data restoring to the separate init() method.
 - Upgraded storing algorithm.
+
+## [6.0.0] - 2025-02-11
+
+_BROKEN VERSION_
 
 ## [5.0.0] - 2025-02-11
 
