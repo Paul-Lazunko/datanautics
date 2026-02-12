@@ -2,13 +2,13 @@
 
 **Datanautics** is a lightweight key-value storage system with support for nested property access and persistent dumps to disk.
 
-It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nested data**, and periodically saves the current state to a JSON file for durability.
+It uses string-based paths (like `user[0].profile.name`) to **get/set deeply nested data**, and saves the current state to the dump file for durability.
 
 ---
 
 ## Features
 
-- Dot/bracket notation access (`a.b[0]['c']`)
+- Dot/bracket notation access (`a.b[0]['call me as u wish']`)
 - Persistent JSON file storage (auto-saves at configurable intervals)
 - Configurable verbosity and custom logger
 - Simple API: `.get(key)`, `.set(key, value)`
