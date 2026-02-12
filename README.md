@@ -35,6 +35,8 @@ const store = new Datanautics({
   logger: console,
 });
 
+await store.init();
+
 store.set('users[0].name', 'Alice');
 console.log(store.get('users[0].name')); // Output: Alice
 ```
@@ -46,14 +48,17 @@ console.log(store.get('users[0].name')); // Output: Alice
 You can pass the following options to the constructor:
 
 | Option     | Type                | Description                                       | Default                                   |
-| ---------- | ------------------- | ------------------------------------------------- | ----------------------------------------- |
+|------------| ------------------- |---------------------------------------------------|-------------------------------------------|
 | `dumpPath` | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json` |
 | `verbose`  | `boolean`, optional | Log errors during reading/writing                 | `false`                                   |
+| `writer`   | `boolean`, optional | master mode if true                               | `true`                                    |
 | `logger`   | `object`, optional  | Custom logger (`console`, `winston`, etc.)        | `console`                                 |
 
 ---
 
 ## Methods
+### `init(): Promise<void>`
+Initializes created instance and restores data;
 
 ### `set(key: string, value: any): boolean`
 
@@ -66,16 +71,6 @@ Returns `true` on success, `false` if the key is invalid.
 Retrieves the value at the specified path.
 
 Returns `undefined` if the path does not exist or is non-evaluable.
-
-### `store(key: string): void`
-
-Explicitly creates dump
-
----
-
-## Event based Auto-Save Mechanism
-
-- Settings data triggers a dump to `options.dumpPath`;
 
 ---
 
