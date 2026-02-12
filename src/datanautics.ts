@@ -1,4 +1,4 @@
-import { existsSync, writeFileSync, readFileSync, watch, createWriteStream, WriteStream } from 'fs';
+import { existsSync, writeFileSync, watch, createWriteStream, WriteStream } from 'fs';
 import { PropertyAccessor } from 'property-accessor';
 const signals = [
   'SIGINT',
@@ -7,43 +7,46 @@ const signals = [
 
 import { defaultDatanauticsOptions, numberRegExp, intRegExp, boolRegExp, objRegEx, objExtractRegEx } from '@const';
 import { DatanauticsOptions } from '@options';
-import { serializeValue } from './helpers';
+import { processFileByLine, serializeValue } from './helpers';
 
 export class Datanautics {
   protected options: DatanauticsOptions;
   protected data: Record<string, any>;
   protected stream: WriteStream;
+  private isRestoring: boolean;
 
   constructor(options?: DatanauticsOptions) {
     this.options = { ...defaultDatanauticsOptions, ...(options || {}) };
     this.data = {};
-    if (existsSync(this.options.dumpPath)) {
-      this.useDump();
-    } else {
+    if (!existsSync(this.options.dumpPath)) {
       writeFileSync(this.options.dumpPath, '', 'utf8');
     }
-    if (options.writer) {
-      this.stream = createWriteStream(this.options.dumpPath);
-    } else {
-      watch(this.options.dumpPath, () => {
-        this.useDump();
-      });
-    }
-    signals.forEach((signal) => {
-      process.once(signal, async () => {
-        this.stream.end((error: Error) => {
-          console.log('closed stream', error);
-        });
-      });
-    });
+
   }
 
-  protected useDump() {
-    const data = readFileSync(this.options.dumpPath).toString('utf8');
-    const lines: string[] = data.split('\n');
-    for (const line of lines) {
+  public async init() {
+    await this.restoreFromFile();
+    if (this.options.writer) {
+      this.stream = createWriteStream(this.options.dumpPath);
+      signals.forEach((signal) => {
+        process.once(signal, async () => {
+          this.stream?.end((error: Error) => {
+            console.log('Closed stream', error);
+          });
+        });
+      });
+    } else {
+      watch(this.options.dumpPath, async () => {
+        await this.restoreFromFile()
+      });
+    }
+  }
+
+  protected async  restoreFromFile() {
+    this.isRestoring = true;
+     await processFileByLine(this.options.dumpPath, (line: string) => {
       if (!line) {
-        continue;
+        return;
       }
       const lineData: string[] = line.split(' ');
       let k: string;
@@ -88,18 +91,26 @@ export class Datanautics {
       } else {
         PropertyAccessor.delete(key, this.data);
       }
-    }
+    });
+    this.isRestoring = false;
   }
 
   public set(key: string, value: any): boolean {
-    this.store(key, value);
-    return PropertyAccessor.set(key, value, this.data);
+    const result: boolean =  PropertyAccessor.set(key, value, this.data);
+    if (this.options.writer) {
+      this.store(key, value);
+    }
+    return result;
   }
 
   private store(key: string, value: any) {
-    const baseKey = key.trim().replace(/\s/g, '␣');
     const now = Date.now();
-    this.stream.write(`${now} ${baseKey} ${serializeValue(value)}\n`);
+    const keys: string[] = PropertyAccessor.collectKeys(key, value);
+    for (const k of keys) {
+      const nk: string = k.replace(/\s/g, '␣');
+      const v = PropertyAccessor.get(k, this.data);
+      this.stream.write(`${now} ${nk} ${serializeValue(v)}\n`);
+    }
   }
 
   public get(key: string): any {
