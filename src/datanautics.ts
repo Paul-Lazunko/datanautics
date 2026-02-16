@@ -92,6 +92,7 @@ export class Datanautics {
       } else {
         PropertyAccessor.delete(key, this.data);
       }
+      this.storeKeyValue(k, v);
     });
   }
 
