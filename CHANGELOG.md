@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.0.0] - 2026-06-28 (Breaking changes)
+
+### Removed
+
+- **File system integration**: We've streamlined the core library by removing direct file system handling. This gives you complete control over storage and restoration logic, allowing you to implement custom solutions tailored to your needs.
+- **Writer/reader mode bifurcation**: Simplified the codebase by consolidating mode-specific behavior, making the library more intuitive to work with.
+
+### Changed
+
+- The following options are now deprecated and removed in current and future releases:
+  - `options.pathToDumpFile`
+  - `options.storingInterval`
+  - `options.writer`
+
+- **Updated method signatures**:
+  - `init()` and `restore()` now require a `stream: ReadStream` argument
+  - `store()` now requires a `stream: WriteStream` argument
+
+**Migration guide**: If you were relying on automatic file-based storage, you'll need to manage stream handling in your application. This provides greater flexibility and control over persistence.
+
+---
+
 ## [8.0.0] - 2025-02-11
 
 ### Added
@@ -17,7 +39,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - options.dumpPath -> options.pathToDumpFile
 - options.dumpInterval -> options.storingInterval
-
 
 ## [7.0.0] - 2025-02-11
 

@@ -47,20 +47,18 @@ console.log(store.get('users[0].name')); // Output: Alice
 
 You can pass the following options to the constructor:
 
-| Option     | Type                | Description                                       | Default                                   |
-| ---------- | ------------------- | ------------------------------------------------- | ----------------------------------------- |
-| `dumpPath` | `string`, optional  | Path to the JSON file for persistent data storage | `node_modules/datanautics/data/data.json` |
-| `verbose`  | `boolean`, optional | Log errors during reading/writing                 | `false`                                   |
-| `writer`   | `boolean`, optional | master mode if true                               | `true`                                    |
-| `logger`   | `object`, optional  | Custom logger (`console`, `winston`, etc.)        | `console`                                 |
+| Option    | Type                | Description                                | Default   |
+| --------- | ------------------- | ------------------------------------------ | --------- |
+| `verbose` | `boolean`, optional | Log errors during reading/writing          | `true`    |
+| `logger`  | `object`, optional  | Custom logger (`console`, `winston`, etc.) | `console` |
 
 ---
 
 ## Methods
 
-### `init(): Promise<void>`
+### `init(stream: ReadStream): Promise<void>`
 
-Initializes created instance and restores data;
+Initializes the instance and restores your data from the provided ReadStream.
 
 ### `set(key: string, value: any): boolean`
 
@@ -74,15 +72,16 @@ Retrieves the value at the specified path.
 
 Returns `undefined` if the path does not exist or is non-evaluable.
 
-### `store(key: string): Promise<void>`
+### `store(stream: WriteStream): Promise<void>`
 
-Asynchronously stores data into file defined in _options.pathToDumpFile_
+Persists data by piping it into the provided WriteStream.
+This method handles the streaming operation and resolves once the data has been fully written.
 
 ---
 
 ## Requirements
 
-- Node.js 14+
+- Node.js 18+
 
 ---
 
