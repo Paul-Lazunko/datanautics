@@ -36,12 +36,29 @@ export function twoFilesDiff(sourcePath: string, targetPath: string) {
   const set = sKeys.filter(
     (sKey) => !tMap.has(sKey) || (tMap.get(sKey) !== sMap.get(sKey) && tsMap.get(sKey) > ttMap.get(sKey)),
   );
-  const patch: Record<string, any> = {};
+  const reverse = tKeys.filter((tKey) => tMap.get(tKey) !== sMap.get(tKey) && tsMap.get(tKey) <= ttMap.get(tKey));
+  const patch = {};
+  console.log({ set, reverse });
   remove.forEach((key) => {
-    patch[key] = undefined;
+    patch[key] = [
+      tMap.get(key),
+      undefined,
+      undefined,
+    ];
   });
   set.forEach((key) => {
-    patch[key] = `${tMap.get(key)} ${sMap.get(key)}`;
+    patch[key] = [
+      sMap.get(key),
+      tMap.get(key),
+      ttMap.get(key),
+    ];
+  });
+  reverse.forEach((key) => {
+    patch[key] = [
+      tMap.get(key),
+      sMap.get(key),
+      tsMap.get(key),
+    ];
   });
   return patch;
 }
