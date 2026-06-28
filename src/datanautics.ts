@@ -1,4 +1,4 @@
-import { WriteStream, ReadStream } from 'fs';
+import { Writable, Readable } from 'stream';
 import { PropertyAccessor } from 'property-accessor';
 
 import { defaultDatanauticsOptions, numberRegExp, intRegExp, boolRegExp, objRegEx, objExtractRegEx } from '@const';
@@ -16,11 +16,11 @@ export class Datanautics {
     this.lines = new Map<string, string>();
   }
 
-  public async init(stream: ReadStream) {
+  public async init(stream: Readable) {
     await this.restore(stream);
   }
 
-  public async store(stream: WriteStream) {
+  public async store(stream: Writable) {
     const lines = this.lines.values();
     for (const line of lines) {
       if (!stream.write(line)) {
@@ -30,7 +30,7 @@ export class Datanautics {
     await new Promise((resolve) => stream.end(resolve));
   }
 
-  protected async restore(stream: ReadStream) {
+  protected async restore(stream: Readable) {
     await processStreamByLine(stream, (line: string) => {
       if (!line) {
         return;
