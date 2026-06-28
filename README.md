@@ -29,16 +29,21 @@ npm install datanautics
 ```ts
 const { Datanautics } = require('datanautics');
 
-const store = new Datanautics({
-  dumpPath: './data.json',
+const storage = new Datanautics({
   verbose: true,
   logger: console,
 });
 
-await store.init();
+const readStream = createReadStream('/path/to/file', { encoding: 'utf8' });
 
-store.set('users[0].name', 'Alice');
-console.log(store.get('users[0].name')); // Output: Alice
+await storage.init(readStream);
+
+storage.set('users[0].name', 'Alice');
+console.log(storage.get('users[0].name')); // Output: Alice
+
+const writeStream = createWriteStream('/path/to/file');
+
+await storage.store(writeStream);
 ```
 
 ---
