@@ -1,8 +1,7 @@
-import { createReadStream, ReadStream } from 'fs';
+import { ReadStream } from 'fs';
 
-export function processFileByLine(dumpPath: string, onLine: (line: string) => void): Promise<void> {
+export function processStreamByLine(stream: ReadStream, onLine: (line: string) => void): Promise<void> {
   return new Promise<void>((resolve, reject) => {
-    const stream: ReadStream = createReadStream(dumpPath, { encoding: 'utf8' });
     let leftover: string = '';
     stream.on('data', (chunk: Buffer) => {
       stream.pause();
