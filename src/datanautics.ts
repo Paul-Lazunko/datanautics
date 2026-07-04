@@ -30,7 +30,7 @@ export class Datanautics {
     await new Promise((resolve) => stream.end(resolve));
   }
 
-  protected async restore(stream: Readable) {
+  public async restore(stream: Readable) {
     await processStreamByLine(stream, (line: string) => {
       if (!line) {
         return;
