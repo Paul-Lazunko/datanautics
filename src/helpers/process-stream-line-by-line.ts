@@ -1,6 +1,6 @@
-import { ReadStream } from 'fs';
+import { Readable } from 'stream';
 
-export function processStreamByLine(stream: ReadStream, onLine: (line: string) => void): Promise<void> {
+export function processStreamByLine(stream: Readable, onLine: (line: string) => void): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     let leftover: string = '';
     stream.on('data', (chunk: Buffer) => {
