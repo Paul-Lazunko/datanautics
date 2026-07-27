@@ -22,7 +22,7 @@
     "runtime": "node dist/index.js"
   },
   "dependencies": {
-    "property-accessor": "^2.8.0"
+    "property-accessor": "^2.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
