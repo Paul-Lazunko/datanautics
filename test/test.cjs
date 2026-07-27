@@ -30,7 +30,7 @@ async function main() {
   await dataStore.init(readStream);
   assert.equal(dataStore.set('user.firstname', data.user.firstname), true);
   assert.equal(dataStore.set('user.birthday', data.user.birthday), true);
-  assert.equal(dataStore.set(data.user.birthday, 123), true);
+  assert.equal(dataStore.set(`data.${data.user.birthday}`, 123), true);
   assert.equal(dataStore.set('user.lastname', data.user.lastname), true);
   assert.equal(dataStore.set('score[0]', data.score[0]), true);
   assert.equal(dataStore.set('nested', data.nested), true);
@@ -46,9 +46,11 @@ async function main() {
   assert.equal(dataStore.get('user.firstname'), data.user.firstname);
   assert.equal(dataStore.get('user.lastname'), data.user.lastname);
   assert.equal(dataStore.get('user.birthday'), data.user.birthday);
-  assert.equal(dataStore.get(data.user.birthday), 123);
+  assert.equal(dataStore.get(`data.${data.user.birthday}`), 123);
+  assert.equal(dataStore.get(`data.${data.user.birthday.split('.')}`), undefined);
   assert.equal(dataStore.get('score[0]'), data.score[0]);
   assert.equal(dataStore.get('kk'), data.kk);
+  console.log(dataStore.get('data'));
   console.log('OK');
   process.exit(0);
 }
